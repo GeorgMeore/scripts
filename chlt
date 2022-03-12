@@ -1,0 +1,22 @@
+#!/bin/sh
+# Change layout.
+
+setxkbmap -query |
+awk 'BEGIN {
+	layouts[0] = "us"
+	layouts[1] = "ru"
+}
+
+/layout/ {
+	for (i = 0; i < length(layouts) - 1; i++)
+		if (layouts[i] == $2) {
+			system("setxkbmap " layouts[i + 1])
+			found = 1
+			exit
+		}
+}
+
+END {
+	if (!found)
+		system("setxkbmap " layouts[0])
+}'

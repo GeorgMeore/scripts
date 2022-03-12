@@ -1,0 +1,19 @@
+#!/bin/sh
+# Print input and output network traffic.
+
+# read recieved/transmitted bytes on start
+read -r rx_start </sys/class/net/wlan0/statistics/rx_bytes
+read -r tx_start </sys/class/net/wlan0/statistics/tx_bytes
+
+# wait for user input
+printf "Press enter to stop: "
+read -r stop
+
+# read new recieved/transmitted bytes
+read -r rx_end </sys/class/net/wlan0/statistics/rx_bytes
+read -r tx_end </sys/class/net/wlan0/statistics/tx_bytes
+
+# calculate and print difference
+rx_diff=$((rx_end - rx_start))
+tx_diff=$((tx_end - tx_start))
+echo "IN:$(numfmt --to=iec-i --padding=5 -- "$rx_diff")B OUT:$(numfmt --to=iec-i --padding=5 -- "$tx_diff")B"

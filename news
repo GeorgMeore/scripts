@@ -1,0 +1,28 @@
+#!/bin/sh
+# Simple news viewer.
+
+# sfeed data directory
+sfeedpath="${XDG_DATA_HOME}/sfeed"
+
+# get last access time
+if [ $# -gt 0 ]; then
+	last=$(date -d"$*" +%s) || exit 1
+else
+	last=$(stat -c%X "$sfeedpath/last")
+	touch "$sfeedpath/last"
+fi
+
+# list feeds younger than "$last"
+for feed in "$sfeedpath/feeds"/*; do
+	awk -v"last=$last" -v"feed=${feed##*/}:" '
+		BEGIN {
+			FS="\t"
+			feed = sprintf("%-20.20s", feed)
+		}
+		$1 > last {
+			date = strftime("%Y %b %d %H:%M:%S", $1)
+			title = length($2) < 50 ? sprintf("%-50.50s", $2) : sprintf("%-47.47s...", $2)
+			link = $3
+			printf("%s %s  %s  %s\n", feed, date, title, link)
+		}' "$feed"
+done | dmenu -i -l 10 -p 'Open:' | awk '{print $NF}' | xargs -rd'\n' firefox
