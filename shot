@@ -1,0 +1,35 @@
+#!/bin/sh
+# Make screenshot.
+
+OPTS='1. Whole screen to clipboad.
+2. Whole screen to file.
+3. Select to clipboad.
+4. Select to file.'
+
+case $(echo "$OPTS" | dmenu -p 'Screenshot:' -l 4) in
+	1*) o_sel=false o_save=false ;;
+	2*) o_sel=false o_save=true  ;;
+	3*) o_sel=true  o_save=false ;;
+	4*) o_sel=true  o_save=true  ;;
+	*) exit 1 ;;
+esac
+
+# if option with selection is chosen - make sure touchpad is enabled
+tp_enabled=false
+if [ "$o_sel" = true ] && [ "$(tp state)" = off ]; then
+	tp toggle
+	tp_enabled=true
+fi
+
+case $o_sel in
+	true) maim -s ;;
+	false) maim ;;
+esac | case $o_save in
+	true) cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png" ;;
+	false) xclip -i -select clipboard -t image/png ;;
+esac
+
+# if touchpad was enabled - disable it
+if [ "$tp_enabled" = true ]; then
+	tp toggle
+fi

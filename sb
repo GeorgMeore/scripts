@@ -1,0 +1,86 @@
+#!/bin/sh
+# Statusbar generator.
+
+# print audio status
+aud() {
+	info=$(amixer get Master)
+	case $info in
+		*Mono:*\[on\])
+			info=${info#*\[}
+			echo "${info%%\]*}" ;;
+		*Mono:*\[off\])
+			echo off ;;
+		*)
+			echo err ;;
+	esac
+}
+
+# print battery percentage
+bat() {
+	read -r percentage </sys/class/power_supply/BAT0/capacity
+	read -r status </sys/class/power_supply/BAT0/status
+	if [ "$status" = Charging ]; then
+		echo "charging:$percentage%"
+	elif [ "$percentage" -eq 100 ]; then
+		echo "full:$percentage%"
+	elif [ "$percentage" -gt 14 ]; then
+		echo "$percentage%"
+	else
+		echo "low:$percentage%"
+	fi
+}
+
+# show current brightness percentage
+disp() {
+	read -r curr </sys/class/backlight/intel_backlight/brightness
+	read -r max  </sys/class/backlight/intel_backlight/max_brightness
+	echo "$((curr * 100 / max))%"
+}
+
+# print current layout
+lang() {
+	setxkbmap -query | while read -r line; do
+		case $line in
+			layout*) echo "${line##* }" ;;
+		esac
+	done
+}
+
+# print number of unread rss updates
+rss() {
+	sfeedpath="${XDG_DATA_HOME}/sfeed"
+	last=$(stat -c%X "$sfeedpath/last")
+	for feed in "$sfeedpath/feeds"/*; do
+		while read -r ts rest; do
+			[ "$ts" -lt "$last" ] || new=$((new + 1))
+		done <"$feed"
+	done
+	case $new in
+		'') echo none ;;
+		*) echo "new:$new" ;;
+	esac
+}
+
+
+# main loop
+while : ; do
+	# recompute values as necessary
+	aud="AUD: $(aud)"
+	disp="DISP: $(disp)"
+	lang="LANG: $(lang)"
+	test $((tick % 5)) -ne 0 || {
+		date="$(date +'DATE: %a %-e %b %H:%M:%S')"
+	}
+	test $((tick % 50)) -ne 0 || {
+		bat="BAT: $(bat)"
+	}
+	test $((tick % 300)) -ne 0 || {
+		rss="RSS: $(rss)"
+	}
+	# set statusline
+	statusline=" ${aud} | ${disp} | ${bat} | ${lang} | ${rss} | ${date} "
+	xsetroot -name "$statusline" || exit 1
+	# increment counter and sleep
+	tick=$((tick + 1))
+	sleep 0.2
+done

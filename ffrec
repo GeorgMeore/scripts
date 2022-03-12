@@ -1,0 +1,73 @@
+#!/bin/sh
+# Record the screen.
+
+# runtime files
+cachedir=$XDG_CACHE_HOME/ffrec
+pidfile=$cachedir/pid
+lockfile=$cachedir/lock
+
+# dmenu options
+killopts='yes
+no'
+recopts='1.Record screen.
+2.Record screen with screenkey.'
+
+
+# select option
+choose() {
+	echo "$1" | dmenu -p "$2" -l 10
+}
+
+# spawn recording processes
+record() {
+	ffmpeg \
+		-loglevel panic \
+		-f x11grab \
+		-s 1920x1080 \
+		-i "$DISPLAY" \
+		-f alsa \
+		-i hw:0 \
+		-r 25 \
+		-c:v libx264 \
+		-c:a flac \
+		"$HOME/video/rec/$(date +'%d-%m-%y_%H:%M:%S').mkv" &
+	pids="$!"
+	if [ "$1" = withkeys ]; then
+		screenkey -s small &
+		pids="$pids $!"
+	fi
+	trap "stop $pids" TERM
+	wait
+}
+
+# kill spawned processes (on SIGTERM)
+stop() {
+	trap '' TERM
+	while [ $# -gt 0 ]; do
+		kill "$1"
+		shift
+	done
+}
+
+# make sure cache directory exists
+mkdir -p "$cachedir"
+
+# ignore sigterm for now
+trap '' TERM
+
+if mkfifo "$lockfile" 2>/dev/null; then
+	# recorder branch
+	echo $$ >"$pidfile"
+	case $(choose "$recopts" 'Record:') in
+		1*) record ;;
+		2*) record withkeys ;;
+	esac
+	rm "$pidfile"
+	rm "$lockfile"
+else
+	# killer branch
+	case $(choose "$killopts" 'Stop recording?') in
+		y*) kill "$(cat "$pidfile")" 2>/dev/null ;;
+		*) exit 1 ;;
+	esac
+fi
