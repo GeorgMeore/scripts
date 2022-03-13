@@ -1,0 +1,16 @@
+#!/bin/sh
+# Change brightness.
+
+# check if given parameter is valid
+[ "$1" -eq "$1" ] 2>/dev/null || {
+	echo "${0##*/}: invalid brightness value" >&2
+	exit 1
+}
+
+# read current brightness
+read -r curr </sys/class/backlight/intel_backlight/brightness
+read -r max </sys/class/backlight/intel_backlight/max_brightness
+
+# set new brightness
+new=$((curr + max*$1/100))
+echo "$((new < 0 ? 0 : (new > max ? max : new)))" >/sys/class/backlight/intel_backlight/brightness
