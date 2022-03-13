@@ -1,5 +1,5 @@
 #!/bin/sh
-# Simple boormark browser.
+# Boormark browser.
 
 # all boormark lists should be located here
 bmpath=$XDG_CONFIG_HOME/bm

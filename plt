@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Simple matplotlib wrapper for quick plotting.
+# Matplotlib wrapper for quick plotting.
 
 import sys
 import argparse
