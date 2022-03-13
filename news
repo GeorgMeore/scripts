@@ -1,5 +1,5 @@
 #!/bin/sh
-# Simple news viewer.
+# News viewer for sfeed.
 
 # sfeed data directory
 sfeedpath="${XDG_DATA_HOME}/sfeed"
