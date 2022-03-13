@@ -1,6 +1,6 @@
 PREFIX = $(HOME)/.local
 
-SCRIPTS = bm chlt ffrec fzfeed fztm netdiff news plt sb shot tp
+SCRIPTS = bm chlt chbrt ffrec netdiff news plt sb shot tp
 
 install:
 	mkdir -p "$(PREFIX)/bin"
