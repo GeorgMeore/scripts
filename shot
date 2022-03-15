@@ -1,35 +1,45 @@
 #!/bin/sh
 # Make screenshot.
 
-OPTS='1. Whole screen to clipboad.
-2. Whole screen to file.
-3. Select to clipboad.
-4. Select to file.'
-
-case $(echo "$OPTS" | dmenu -p 'Screenshot:' -l 4) in
-	1*) o_sel=false o_save=false ;;
-	2*) o_sel=false o_save=true  ;;
-	3*) o_sel=true  o_save=false ;;
-	4*) o_sel=true  o_save=true  ;;
+# choose area
+case $(echo '1. Whole screen
+2. Select area' | dmenu -p 'Screenshot:' -l 2) in
+	1*)
+		screenshotcmd() {
+			maim
+		} ;;
+	2*)
+		screenshotcmd() {
+			# make sure touchpad is enabled
+			case $(tp state) in
+				off)
+					tp toggle
+					maim -s
+					tp toggle ;;
+				*) maim -s ;;
+			esac
+		} ;;
 	*) exit 1 ;;
 esac
 
-# if option with selection is chosen - make sure touchpad is enabled
-tp_enabled=false
-if [ "$o_sel" = true ] && [ "$(tp state)" = off ]; then
-	tp toggle
-	tp_enabled=true
-fi
-
-case $o_sel in
-	true) maim -s ;;
-	false) maim ;;
-esac | case $o_save in
-	true) cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png" ;;
-	false) xclip -i -select clipboard -t image/png ;;
+# choose what to do with a screenshot
+case $(echo '1. Clipboad
+2. File
+3. Open' | dmenu -p 'Save to:' -l 3) in
+	1*)
+		savecmd() {
+			xclip -i -select clipboad -t image/png
+		} ;;
+	2*)
+		savecmd() {
+			cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png"
+		} ;;
+	3*)
+		savecmd() {
+			feh -
+		} ;;
+	*) exit 1 ;;
 esac
 
-# if touchpad was enabled - disable it
-if [ "$tp_enabled" = true ]; then
-	tp toggle
-fi
+# screenshot
+screenshotcmd | savecmd
