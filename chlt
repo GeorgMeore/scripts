@@ -8,15 +8,11 @@ awk 'BEGIN {
 }
 
 /layout/ {
-	for (i = 0; i < length(layouts) - 1; i++)
-		if (layouts[i] == $2) {
-			system("setxkbmap " layouts[i + 1])
-			found = 1
-			exit
-		}
+	for (i = 0; i < length(layouts); i++)
+		if (layouts[i] == $2)
+			nextlt = i + 1
 }
 
 END {
-	if (!found)
-		system("setxkbmap " layouts[0])
+	system("setxkbmap " layouts[nextlt % length(layouts)])
 }'
