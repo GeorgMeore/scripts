@@ -68,13 +68,13 @@ while : ; do
 	aud="AUD: $(aud)"
 	disp="DISP: $(disp)"
 	lang="LANG: $(lang)"
-	test $((tick % 5)) -ne 0 || {
+	test $((tick % 2)) -ne 0 || {
 		date="$(date +'DATE: %a %-e %b %H:%M:%S')"
 	}
-	test $((tick % 50)) -ne 0 || {
+	test $((tick % 20)) -ne 0 || {
 		bat="BAT: $(bat)"
 	}
-	test $((tick % 300)) -ne 0 || {
+	test $((tick % 60)) -ne 0 || {
 		rss="RSS: $(rss)"
 	}
 	# set statusline
@@ -82,5 +82,5 @@ while : ; do
 	xsetroot -name "$statusline" || exit 1
 	# increment counter and sleep
 	tick=$((tick + 1))
-	sleep 0.2
+	sleep 0.5
 done
