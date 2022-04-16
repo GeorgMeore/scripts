@@ -48,7 +48,7 @@ lang() {
 
 # print number of unread rss updates
 rss() {
-	sfeedpath="${XDG_DATA_HOME}/sfeed"
+	sfeedpath=~/.sfeed
 	last=$(stat -c%X "$sfeedpath/last")
 	for feed in "$sfeedpath/feeds"/*; do
 		while read -r ts rest; do
