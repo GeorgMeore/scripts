@@ -2,7 +2,7 @@
 # Boormark browser.
 
 # all boormark lists should be located here
-bmpath=$XDG_CONFIG_HOME/bm
+bmpath=~/doc/bm
 
 choose_cat() {
 	{
