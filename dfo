@@ -1,0 +1,13 @@
+#!/bin/sh
+# File opener.
+
+while : ;do
+	file=$(ls -dF * .. | dmenu -i -l 10 -p 'Open:') || break
+	case $file in
+		*/)
+			cd "$file" ;;
+		*)
+			prog=$(dmenu_path | dmenu -l 10 -p 'Program:') || continue
+			exec "$prog" "$file" ;;
+	esac
+done
