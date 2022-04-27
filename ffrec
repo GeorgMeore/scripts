@@ -2,9 +2,8 @@
 # Record the screen.
 
 # runtime files
-cachedir=$XDG_CACHE_HOME/ffrec
-pidfile=$cachedir/pid
-lockfile=$cachedir/lock
+lockdir=/tmp/ffrec$DISPLAY
+pidfile=$lockdir/pid
 
 # dmenu options
 killopts='yes
@@ -49,25 +48,21 @@ stop() {
 	done
 }
 
-# make sure cache directory exists
-mkdir -p "$cachedir"
-
 # ignore sigterm for now
 trap '' TERM
 
-if mkfifo "$lockfile" 2>/dev/null; then
+if mkdir "$lockdir" 2>/dev/null; then
 	# recorder branch
 	echo $$ >"$pidfile"
 	case $(choose "$recopts" 'Record:') in
 		1*) record ;;
 		2*) record withkeys ;;
 	esac
-	rm "$pidfile"
-	rm "$lockfile"
+	rm -r "$lockdir"
 else
 	# killer branch
 	case $(choose "$killopts" 'Stop recording?') in
-		y*) kill "$(cat "$pidfile")" 2>/dev/null ;;
+		y*) pkill -F "$pidfile" 2>/dev/null ;;
 		*) exit 1 ;;
 	esac
 fi
