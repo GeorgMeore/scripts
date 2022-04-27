@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pipe wrapper: run program only when all of the stdin is read
+
+[ $# -gt 0 ] || {
+	echo "usage: ${0##*/} cmd [args...]" >&2
+	exit 1
+}
+input=$(mktemp /tmp/pwXXXX) || {
+	echo "${0##*/}: couldn't create temporary file" >&2
+	exit 1
+}
+cat >"$input"
+"$@" <"$input"
+err=$?
+rm -f "$input"
+exit "$err"
