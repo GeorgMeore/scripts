@@ -5,18 +5,6 @@
 lockdir=/tmp/ffrec$DISPLAY
 pidfile=$lockdir/pid
 
-# dmenu options
-killopts='yes
-no'
-recopts='1.Record screen.
-2.Record screen with screenkey.'
-
-
-# select option
-choose() {
-	echo "$1" | dmenu -p "$2" -l 10
-}
-
 # spawn recording processes
 record() {
 	ffmpeg \
@@ -30,22 +18,14 @@ record() {
 		-c:v libx264 \
 		-c:a flac \
 		"$HOME/video/rec/$(date +'%d-%m-%y_%H:%M:%S').mkv" &
-	pids="$!"
-	if [ "$1" = withkeys ]; then
-		screenkey -s small &
-		pids="$pids $!"
-	fi
-	trap "stop $pids" TERM
+	trap "stop $!" TERM
 	wait
 }
 
 # kill spawned processes (on SIGTERM)
 stop() {
 	trap '' TERM
-	while [ $# -gt 0 ]; do
-		kill "$1"
-		shift
-	done
+	kill "$1"
 }
 
 # ignore sigterm for now
@@ -54,15 +34,13 @@ trap '' TERM
 if mkdir "$lockdir" 2>/dev/null; then
 	# recorder branch
 	echo $$ >"$pidfile"
-	case $(choose "$recopts" 'Record:') in
-		1*) record ;;
-		2*) record withkeys ;;
+	case $(printf '%s\n' yes no | dmenu -l 10 -p 'Start recording?') in
+		y*) record ;;
 	esac
 	rm -r "$lockdir"
 else
 	# killer branch
-	case $(choose "$killopts" 'Stop recording?') in
+	case $(printf '%s\n' yes no | dmenu -l 10 -p 'Stop recording?') in
 		y*) pkill -F "$pidfile" 2>/dev/null ;;
-		*) exit 1 ;;
 	esac
 fi
