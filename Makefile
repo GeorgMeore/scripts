@@ -1,7 +1,7 @@
 PREFIX = $(HOME)/.local
 DATE = $(shell date +%Y.%m.%d)
 
-SCRIPTS = bm chlt chbrt ffrec netdiff news plt sb shot tp howto dfo pw
+SCRIPTS = bm chlt chbrt ffrec netdiff news sb shot tp howto dfo pw
 
 install:
 	mkdir -p "$(PREFIX)/bin"
