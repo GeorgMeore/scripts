@@ -5,10 +5,10 @@
 aud() {
 	info=$(amixer get Master)
 	case $info in
-		*Mono:*\[on\])
+		*Mono:*'[on]')
 			info=${info#*\[}
 			echo "${info%%\]*}" ;;
-		*Mono:*\[off\])
+		*Mono:*'[off]')
 			echo off ;;
 		*)
 			echo err ;;
@@ -68,13 +68,13 @@ while : ; do
 	aud="AUD: $(aud)"
 	disp="DISP: $(disp)"
 	lang="LANG: $(lang)"
-	test $((tick % 2)) -ne 0 || {
+	[ $((tick % 2)) -ne 0 ] || {
 		date="$(date +'DATE: %a %-e %b %H:%M:%S')"
 	}
-	test $((tick % 20)) -ne 0 || {
+	[ $((tick % 20)) -ne 0 ] || {
 		bat="BAT: $(bat)"
 	}
-	test $((tick % 60)) -ne 0 || {
+	[ $((tick % 60)) -ne 0 ] || {
 		rss="RSS: $(rss)"
 	}
 	# set statusline

@@ -2,7 +2,7 @@
 # File opener.
 
 while : ;do
-	file=$(ls -dF * .. | dmenu -i -l 10 -p 'Open:') || break
+	file=$(ls -dp * .. | dmenu -i -l 10 -p 'Open:') || break
 	case $file in
 		*/)
 			cd "$file" ;;
