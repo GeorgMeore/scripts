@@ -2,30 +2,11 @@
 # Boormark browser.
 
 # all boormark lists should be located here
-bmpath=~/doc/bm
-
-choose_cat() {
-	{
-		find "$bmpath" -type f -printf '%P\n'
-		echo '[All]'
-	} |
-	dmenu -i -l 10 -p 'Category:'
-}
-
-choose_urls() {
-	[ "$1" = '[All]' ] && shift # cat out all lists
-	find "$bmpath/$1" -type f -exec cat {} \; |
-	dmenu -i -l 10 -p 'Category:' |
-	awk '{
-		match($NF, /\[(.*)\]/, url)
-		print url[1] }'
-}
+cd ~/doc/bm || exit 1
 
 while : ;do
-	cat=$(choose_cat)
-	[ -n "$cat" ] || break
-	urls=$(choose_urls "$cat")
-	[ -n "$urls" ] || continue
-	echo "$urls" | xargs -rd'\n' firefox
+	category=$(ls | dmenu -i -l 10 -p 'Category:') || break
+	urls=$(dmenu -i -l 10 -p 'Url:' <"$category") || continue
+	echo "$urls" | sed -E 's/.* :: //' | xargs -rd'\n' firefox
 	break
 done
