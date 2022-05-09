@@ -7,7 +7,7 @@ read -r tx_start </sys/class/net/wlan0/statistics/tx_bytes
 
 # wait for user input
 printf "Press enter to stop: "
-read -r stop
+read -r _
 
 # read new recieved/transmitted bytes
 read -r rx_end </sys/class/net/wlan0/statistics/rx_bytes
