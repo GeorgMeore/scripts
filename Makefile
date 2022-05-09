@@ -13,8 +13,7 @@ uninstall:
 dist:
 	mkdir -p scripts-$(DATE)
 	cp $(SCRIPTS) Makefile scripts-$(DATE)
-	tar -cf scripts-$(DATE).tar scripts-$(DATE)
-	gzip scripts-$(DATE).tar
+	tar -czf scripts-$(DATE).tar.gz scripts-$(DATE)
 	rm -rf scripts-$(DATE)
 
 .PHONY: install uninstall

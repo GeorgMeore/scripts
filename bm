@@ -13,7 +13,7 @@ choose_cat() {
 }
 
 choose_urls() {
-	test "$1" = '[All]' && shift # cat out all lists
+	[ "$1" = '[All]' ] && shift # cat out all lists
 	find "$bmpath/$1" -type f -exec cat {} \; |
 	dmenu -i -l 10 -p 'Category:' |
 	awk '{
