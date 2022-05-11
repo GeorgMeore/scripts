@@ -1,14 +1,14 @@
 #!/bin/sh
 # Read all input and dump into file or stdout
 
-input=$(mktemp /tmp/pwXXXX) || {
+input=$(mktemp /tmp/spongeXXXX) || {
 	echo "${0##*/}: couldn't create temporary file" >&2
 	exit 1
 }
 
 cat >"$input"
-
 case $1 in
 	'') cat "$input" ;;
 	*)  cat "$input" >"$1" ;;
 esac
+rm -f "$input"
