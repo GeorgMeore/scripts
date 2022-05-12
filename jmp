@@ -1,0 +1,35 @@
+#!/bin/sh
+# Directory quck-jump database
+
+# directory list
+jdirs=~/.config/jdirs
+
+# fzf with common arguments
+alias fzf="fzf --prompt='jmp> ' --layout=reverse -d '\t' --with-nth=2.."
+
+# make sure file exists
+touch "$jdirs"
+
+# number of entries
+ndirs=$(wc -l <"$jdirs")
+
+case $1 in
+	'')
+		echo "usage: "${0##*/}" { add | remove [pattern] | get [pattern] }"
+		exit 1
+		;;
+	add)
+		pwd | sort -u - "$jdirs" -o "$jdirs"
+		;;
+	remove)
+		[ "$ndirs" -gt 0 ] || exit
+		nl "$jdirs" | fzf -q "$2" | cut -f1 |
+			xargs -r -I{} sed -i "{}d" "$jdirs"
+		;;
+	get)
+		[ "$ndirs" -gt 0 ] || exit
+		case $2 in
+			'') nl "$jdirs" | fzf ;;
+			*)  nl "$jdirs" | grep "$2" | fzf -0 -1 ;;
+		esac | cut -f2-
+esac
