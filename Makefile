@@ -1,7 +1,12 @@
 PREFIX = $(HOME)/.local
 DATE = $(shell date +%Y.%m.%d)
 
-SCRIPTS = bm chlt chbrt ffrec netdiff news sb shot tp howto dfo pw sponge
+SCRIPTS = \
+	sb tp chlt chbrt \
+	shot ffrec \
+	netdiff \
+	dfo news bm howto \
+	pw sponge jmp
 
 install:
 	mkdir -p "$(PREFIX)/bin"
