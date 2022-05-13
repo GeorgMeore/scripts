@@ -14,10 +14,6 @@ touch "$jdirs"
 ndirs=$(wc -l <"$jdirs")
 
 case $1 in
-	'')
-		echo "usage: ${0##*/} { add | rm | get [pattern] }"
-		exit 1
-		;;
 	add)
 		pwd | sort -u - "$jdirs" -o "$jdirs"
 		;;
@@ -31,4 +27,8 @@ case $1 in
 			'') nl "$jdirs" | fzf ;;
 			*)  nl "$jdirs" | grep "$2" | fzf -0 -1 ;;
 		esac | cut -f2-
+		;;
+	*)
+		echo "usage: ${0##*/} { add | rm | get [pattern] }"
+		exit 1
 esac
