@@ -15,13 +15,13 @@ ndirs=$(wc -l <"$jdirs")
 
 case $1 in
 	'')
-		echo "usage: ${0##*/} { add | remove | get [pattern] }"
+		echo "usage: ${0##*/} { add | rm | get [pattern] }"
 		exit 1
 		;;
 	add)
 		pwd | sort -u - "$jdirs" -o "$jdirs"
 		;;
-	remove)
+	rm)
 		[ "$ndirs" -gt 0 ] || exit
 		nl "$jdirs" | fzf | cut -f1 | xargs -r -I{} sed -i "{}d" "$jdirs"
 		;;
