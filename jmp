@@ -15,7 +15,7 @@ ndirs=$(wc -l <"$jdirs")
 
 case $1 in
 	'')
-		echo "usage: "${0##*/}" { add | remove [pattern] | get [pattern] }"
+		echo "usage: ${0##*/} { add | remove | get [pattern] }"
 		exit 1
 		;;
 	add)
@@ -23,8 +23,7 @@ case $1 in
 		;;
 	remove)
 		[ "$ndirs" -gt 0 ] || exit
-		nl "$jdirs" | fzf -q "$2" | cut -f1 |
-			xargs -r -I{} sed -i "{}d" "$jdirs"
+		nl "$jdirs" | fzf | cut -f1 | xargs -r -I{} sed -i "{}d" "$jdirs"
 		;;
 	get)
 		[ "$ndirs" -gt 0 ] || exit
