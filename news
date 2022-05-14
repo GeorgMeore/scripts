@@ -13,16 +13,16 @@ else
 fi
 
 # list feeds younger than "$last"
-for feed in feeds/*; do
-	awk -v"last=$last" -v"feed=${feed##*/}:" '
-		BEGIN {
-			FS="\t"
-			feed = sprintf("%-20.20s", feed)
-		}
-		$1 > last {
-			date = strftime("%Y %b %d %H:%M:%S", $1)
-			title = length($2) < 50 ? sprintf("%-50.50s", $2) : sprintf("%-47.47s...", $2)
-			link = $3
-			printf("%s  %s  %s  %s\n", feed, date, title, link)
-		}' "$feed"
-done | dmenu -i -l 10 -p 'Open:' | awk '{print $NF}' | xargs -rd'\n' firefox
+cd feeds || exit 1
+awk '{print FILENAME "\t" $0}' * |
+	sort -t'	' -k2nr |
+	awk -F'\t' -v"last=$last" '$2 > last {
+		feed = sprintf("%-20.20s", $1)
+		date = strftime("%Y %b %d %H:%M:%S", $2)
+		title = length($3) < 40 ? sprintf("%-40.40s", $3) : sprintf("%-37.37s...", $3)
+		link = $4
+		printf("%s  %s  %s  %s\n", feed, date, title, link)
+	}' |
+	dmenu -i -l 10 -p 'Open:' |
+	awk '{print $NF}' |
+	xargs -rd'\n' firefox
