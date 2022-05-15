@@ -8,6 +8,6 @@ while : ;do
 			cd "$file" ;;
 		*)
 			prog=$(dmenu_path | dmenu -l 10 -p 'Program:') || continue
-			exec "$prog" "$file" ;;
+			exec $prog "$PWD/$file" ;;
 	esac
 done
