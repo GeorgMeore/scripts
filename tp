@@ -11,16 +11,21 @@ cur_state=$(xinput --list-props "$name" | awk '/Device Enabled/ { print $4 }') |
 }
 
 case $1 in
-	s*) # print state
+	s|state) # print state
 		case $cur_state in
 			1) echo on ;;
 			0) echo off ;;
 			*) echo "${0##*/}: corrupted state value"
-		esac ;;
-	t*) # toggle state
+		esac
+		;;
+	t|toggle) # toggle state
 		case $cur_state in
 			1) xinput --disable "$name"; xdotool mousemove 1920 0    ;;
 			0) xinput --enable  "$name"; xdotool mousemove 960  540  ;;
 			*) echo "${0##*/}: corrupted state value"
-		esac ;;
+		esac
+		;;
+	*)
+		echo "usage: ${0##*/} { s[tate] | t[oggle] }"
+		exit 1
 esac
