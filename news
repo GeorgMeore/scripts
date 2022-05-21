@@ -13,8 +13,11 @@ else
 fi
 
 # list feeds younger than "$last"
-cd feeds || exit 1
-awk '{print FILENAME "\t" $0}' * |
+awk '{
+		name = FILENAME
+		sub(".*/", "", name)
+		print name "\t" $0
+	}' feeds/* |
 	sort -t'	' -k2nr |
 	awk -F'\t' -v"last=$last" '$2 > last {
 		feed = sprintf("%-20.20s", $1)
