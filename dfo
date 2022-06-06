@@ -6,8 +6,11 @@ while : ;do
 	case $file in
 		*/)
 			cd "$file" ;;
-		*)
+		?*)
 			prog=$(dmenu_path | dmenu -l 10 -p 'Program:') || continue
 			exec $prog "$PWD/$file" ;;
+		'')
+			prog=$(dmenu_path | dmenu -l 10 -p 'Program:') || continue
+			exec $prog ;;
 	esac
 done
