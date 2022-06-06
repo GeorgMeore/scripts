@@ -25,7 +25,7 @@ case $1 in
 		[ "$ndirs" -gt 0 ] || exit
 		case $2 in
 			'') nl "$jdirs" | fzf ;;
-			*)  nl "$jdirs" | grep "$2" | fzf -0 -1 ;;
+			*)  nl "$jdirs" | fzf -q "'$2" -0 -1 ;;
 		esac | cut -f2-
 		;;
 	*)
