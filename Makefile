@@ -6,7 +6,7 @@ SCRIPTS = \
 	shot ffrec \
 	netdiff \
 	dfo news bm howto \
-	pw sponge jmp
+	pw jmp
 
 install:
 	mkdir -p "$(PREFIX)/bin"
