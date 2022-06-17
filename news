@@ -30,6 +30,6 @@ awk  -v "last=$last" '{
 		link = $4
 		printf("%s  %s  %s  %s\n", feed, date, title, link)
 	}' |
-	dmenu -i -l 10 -p 'Open:' |
+	dmenu -i -l 10 -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
 	awk '{print $NF}' |
 	xargs -rd'\n' firefox
