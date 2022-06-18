@@ -8,12 +8,12 @@ howtofile=~/doc/notes/howto
 topic=$(
 	grep -v '^	' "$howtofile"  |
 	nl -nln |
-	fzf --prompt 'How to> ' |
+	fzf --with-nth 2.. --prompt 'How to> ' |
 	cut -f1
 )
 
 # check if valid topic was selected
-[ -n "$topic" ] || exit 1
+[ "$topic" ] || exit
 
 # display relevant lines from the howto file
 awk -v topic="$topic" '
