@@ -1,19 +1,18 @@
 #!/bin/sh
 # mass mv
 
-# print to stderr
+# write error message
 err() {
 	echo "error: $1" >&2
 }
 
-# check if line count is the same
-cmplc() {
-	[ "$(wc -l <"$1")" = "$(wc -l <"$2")" ]
-}
-
-# on-exit cleanup
-cleanup() {
-	rm -rf "$tmp"
+# make temporary directory used for file lists
+mktmpdir() {
+	tmp=$(mktemp -d /tmp/mmvXXX) || {
+		err 'failed to create temporary directory'
+		return 1
+	}
+	trap 'rm -rf "$tmp"' EXIT
 }
 
 # perform renaming
@@ -24,17 +23,14 @@ rename() {
 	done
 }
 
-# main procedure
+# main routine
 mmv() {
-	tmp=$(mktemp -d /tmp/mmvXXX) || return
-	trap cleanup EXIT
 	printf '%s\n' "$@" | tee "$tmp/old" >"$tmp/new"
-	[ "$EDITOR" ] || {
-		err 'EDITOR variable is not set'
+	$EDITOR "$tmp/new" || {
+		err "$EDITOR terminated with code $?"
 		return 1
 	}
-	$EDITOR "$tmp/new" || return
-	cmplc "$tmp/old" "$tmp/new" || {
+	[ "$(wc -l <"$tmp/old")" = "$(wc -l <"$tmp/new")" ] || {
 		err 'different line count'
 		return 1
 	}
@@ -42,7 +38,11 @@ mmv() {
 }
 
 [ $# -gt 0 ] || {
-	err 'usage: mmv FILES...'
+	echo "usage: ${0##*/} FILES..."
 	exit
 }
-mmv "$@"
+[ "$EDITOR" ] || {
+	err 'EDITOR variable is not set'
+	exit 1
+}
+mktmpdir && mmv "$@"
