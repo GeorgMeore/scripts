@@ -2,34 +2,45 @@
 # News viewer for sfeed.
 
 # sfeed data directory
-cd ~/.sfeed || exit 1
+cd ~/.sfeed || exit
 
 # get last access time
 if [ $# -gt 0 ]; then
-	last=$(date -d"$*" +%s) || exit 1
+	last=$(date -d"$*" +%s) || exit
 else
 	last=$(stat -c%X last)
 	touch last
 fi
 
-# list feeds younger than "$last"
-awk  -v "last=$last" '{
-		if ($1 > last) {
-			name = FILENAME
-			sub(".*/", "", name)
-			print name "\t" $0
-		} else {
-			nextfile
-		}
-	}' feeds/* |
-	sort -t '	' -k2nr |
+# feeds directory
+cd feeds || exit
+
+# list feeds younger than "$last" sorted by time
+newfeeds() {
+	ls |
+		xargs -rd '\n' awk -v "last=$last" '{
+			if ($1 > last)
+				print FILENAME "\t" $0
+			else
+				nextfile
+		}' |
+		sort -t '	' -k2nr,2
+}
+
+# format feeds
+feedfmt() {
 	awk -F '\t' '{
 		feed = sprintf("%-20.20s", $1)
 		date = strftime("%Y %b %d %H:%M:%S", $2)
-		title = length($3) < 40 ? sprintf("%-40.40s", $3) : sprintf("%-37.37s...", $3)
+		title = sprintf("%-40.40s", $3)
 		link = $4
 		printf("%s  %s  %s  %s\n", feed, date, title, link)
-	}' |
+	}'
+}
+
+# open selected feeds in the browser
+newfeeds |
+	feedfmt |
 	dmenu -i -l 10 -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
 	awk '{print $NF}' |
 	xargs -rd'\n' firefox
