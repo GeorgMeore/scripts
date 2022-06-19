@@ -2,17 +2,15 @@
 # Change layout.
 
 setxkbmap -query |
-awk 'BEGIN {
-	layouts[0] = "us"
-	layouts[1] = "ru"
-}
-
-/layout/ {
-	for (i = 0; i < length(layouts); i++)
-		if (layouts[i] == $2)
-			nextlt = i + 1
-}
-
-END {
-	system("setxkbmap " layouts[nextlt % length(layouts)])
-}'
+	awk 'BEGIN {
+		layouts[0] = "us"
+		layouts[1] = "ru"
+	}
+	/layout/ {
+		for (i = 0; i < length(layouts); i++)
+			if (layouts[i] == $2)
+				nextlt = i + 1
+	}
+	END {
+		system("setxkbmap " layouts[nextlt % length(layouts)])
+	}'
