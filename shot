@@ -2,13 +2,12 @@
 # Make screenshot.
 
 # choose area
-case $(echo '1. Whole screen
-2. Select area' | dmenu -p 'Screenshot:' -l 2) in
-	1*)
+case $(printf '%s\n' 'Whole screen' 'Select area' | dmenu -p 'Screenshot:' -l 2) in
+	W*)
 		screenshotcmd() {
 			maim
 		} ;;
-	2*)
+	S*)
 		screenshotcmd() {
 			# make sure touchpad is enabled
 			case $(tp state) in
@@ -23,18 +22,16 @@ case $(echo '1. Whole screen
 esac
 
 # choose what to do with a screenshot
-case $(echo '1. Clipboad
-2. File
-3. Open' | dmenu -p 'Save to:' -l 3) in
-	1*)
+case $(printf '%s\n' Clipboad File Open | dmenu -p 'Save to:' -l 3) in
+	C*)
 		savecmd() {
 			xclip -i -select clipboad -t image/png
 		} ;;
-	2*)
+	F*)
 		savecmd() {
 			cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png"
 		} ;;
-	3*)
+	O*)
 		savecmd() {
 			feh -
 		} ;;
