@@ -5,8 +5,15 @@
 cd ~/doc/bm || exit 1
 
 while : ;do
-	category=$(ls | dmenu -i -l 10 -p 'Category:') || break
-	urls=$(dmenu -i -l 10 -p 'Url:' <"$category") || continue
-	echo "$urls" | sed -E 's/.* :: //' | xargs -rd'\n' firefox
+	categories=$(ls | dmenu -i -l 10 -p 'Category:')
+	[ "$categories" ] || break
+	urls=$(
+		echo "$categories" |
+		xargs -d '\n' sed -z 's/\n\t/\t/g' |
+		column -t -s '	' |
+		dmenu -i -l 10 -p 'Url:'
+	)
+	[ "$urls" ] || continue
+	echo "$urls" | awk '{print $NF}' | xargs -rd'\n' firefox
 	break
 done
