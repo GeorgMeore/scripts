@@ -4,9 +4,8 @@ DATE = $(shell date +%Y.%m.%d)
 SCRIPTS = \
 	sb tp chlt chbrt \
 	shot ffrec \
-	netdiff \
+	rtb pw jmp\
 	dfo news bm howto \
-	pw jmp
 
 install:
 	mkdir -p "$(PREFIX)/bin"
