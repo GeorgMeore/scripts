@@ -33,7 +33,10 @@ case $(printf '%s\n' Clipboad File Open | dmenu -p 'Save to:' -l 3) in
 		} ;;
 	O*)
 		savecmd() {
-			feh -
+			tmp=$(mktemp /tmp/shotXXXX) || return
+			cat >"$tmp"
+			sxiv "$tmp"
+			rm "$tmp"
 		} ;;
 	*) exit 1 ;;
 esac
