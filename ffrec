@@ -22,7 +22,7 @@ record() {
 	wait
 }
 
-# kill spawned processes (on SIGTERM)
+# kill ffmpeg process (on SIGTERM)
 stop() {
 	trap '' TERM
 	kill "$1"
