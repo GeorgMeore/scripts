@@ -3,7 +3,7 @@ DATE = $(shell date +%Y.%m.%d)
 
 SCRIPTS = \
 	sb tp chlt chbrt \
-	shot ffrec pw\
+	shot ffrec pw mmv\
 	dfo news bm howto \
 
 install:
