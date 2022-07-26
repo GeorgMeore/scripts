@@ -1,0 +1,48 @@
+#!/bin/sh
+# mass mv
+
+# print to stderr
+err() {
+	echo "error: $1" >&2
+}
+
+# check if line count is the same
+cmplc() {
+	[ "$(wc -l <"$1")" = "$(wc -l <"$2")" ]
+}
+
+# on-exit cleanup
+cleanup() {
+	rm -rf "$tmp"
+}
+
+# perform renaming
+rename() {
+	while read -r old && read -r new; do
+		[ "$old" != "$new" ] || continue
+		mv -i "$old" "$new"
+	done
+}
+
+# main procedure
+mmv() {
+	tmp=$(mktemp -d /tmp/mmvXXX) || return
+	trap cleanup EXIT
+	printf '%s\n' "$@" | tee "$tmp/old" >"$tmp/new"
+	[ "$EDITOR" ] || {
+		err 'EDITOR variable is not set'
+		return 1
+	}
+	$EDITOR "$tmp/new" || return
+	cmplc "$tmp/old" "$tmp/new" || {
+		err 'different line count'
+		return 1
+	}
+	paste -d '\n' "$tmp/old" "$tmp/new" | rename
+}
+
+[ $# -gt 0 ] || {
+	err 'usage: mmv FILES...'
+	exit
+}
+mmv "$@"
