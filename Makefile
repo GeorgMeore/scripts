@@ -11,7 +11,7 @@ install:
 	cp -f $(SCRIPTS) "$(PREFIX)/bin"
 
 uninstall:
-	for file in $(SCRIPTS); do rm -f "$(PREFIX)/bin/$$file"; done
+	rm -f $(addprefix $(PREFIX)/bin/,$(SCRIPTS))
 
 dist:
 	mkdir -p scripts-$(DATE)
