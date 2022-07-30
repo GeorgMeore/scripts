@@ -12,5 +12,5 @@ setxkbmap -query |
 				nextlt = i + 1
 	}
 	END {
-		system("setxkbmap " layouts[nextlt % length(layouts)])
+		system("setxkbmap -layout " layouts[nextlt % length(layouts)])
 	}'
