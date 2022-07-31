@@ -5,8 +5,8 @@
 lockdir=/tmp/ffrec$DISPLAY
 pidfile=$lockdir/pid
 
-# spawn recording processes
-record() {
+# spawn ffmpeg processes
+ffstart() {
 	ffmpeg \
 		-loglevel panic \
 		-f x11grab \
@@ -18,14 +18,27 @@ record() {
 		-c:v libx264 \
 		-c:a flac \
 		"$HOME/video/rec/$(date +'%d-%m-%y_%H:%M:%S').mkv" &
-	trap "stop $!" TERM
-	wait
+}
+
+# wait for ffmpeg to terminate
+ffwait() {
+	# we use loop here beacause signals interrupt wait
+	while ! wait; do
+		:
+	done
 }
 
 # kill ffmpeg process (on SIGTERM)
-stop() {
+ffkill() {
 	trap '' TERM
-	kill "$1"
+	kill "$!"
+}
+
+# do the recording
+record() {
+	ffstart
+	trap ffkill TERM
+	ffwait
 }
 
 # ignore sigterm for now
@@ -34,13 +47,13 @@ trap '' TERM
 if mkdir "$lockdir" 2>/dev/null; then
 	# recorder branch
 	echo $$ >"$pidfile"
-	case $(printf '%s\n' yes no | dmenu -l 10 -p 'Start recording?') in
-		y*) record ;;
+	case $(printf '%s\n' Yes No | dmenu -l 10 -p 'Start recording?') in
+		Y*) record
 	esac
 	rm -r "$lockdir"
 else
 	# killer branch
-	case $(printf '%s\n' yes no | dmenu -l 10 -p 'Stop recording?') in
-		y*) pkill -F "$pidfile" 2>/dev/null ;;
+	case $(printf '%s\n' Yes No | dmenu -l 10 -p 'Stop recording?') in
+		Y*) pkill -F "$pidfile" 2>/dev/null ;;
 	esac
 fi
