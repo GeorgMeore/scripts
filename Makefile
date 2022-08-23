@@ -4,7 +4,7 @@ DATE = $(shell date +%Y.%m.%d)
 SCRIPTS = \
 	sb tp chlt chbrt \
 	shot ffrec pw mmv\
-	dfo news bm howto \
+	news bm howto \
 
 install:
 	mkdir -p "$(PREFIX)/bin"
