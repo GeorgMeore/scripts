@@ -5,7 +5,7 @@
 cd ~/doc/bm || exit 1
 
 while : ;do
-	categories=$(ls | dmenu -i -l 10 -p 'Category:')
+	categories=$(find * -type f | dmenu -i -l 10 -p 'Category:')
 	[ "$categories" ] || break
 	urls=$(
 		echo "$categories" |
