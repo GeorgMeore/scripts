@@ -2,7 +2,7 @@
 # Boormark browser.
 
 # all boormark lists should be located here
-cd ~/doc/bm || exit 1
+cd ~/.bm || exit 1
 
 while : ;do
 	categories=$(find * -type f | dmenu -i -l 10 -p 'Category:')
