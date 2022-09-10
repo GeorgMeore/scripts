@@ -1,15 +1,15 @@
 #!/bin/sh
 # Make screenshot.
 
-# choose area
-case $(printf '%s\n' 'Whole screen' 'Select area' | dmenu -p 'Screenshot:' -l 2) in
-	W*)
-		screenshotcmd() {
-			maim
-		} ;;
-	S*)
-		screenshotcmd() {
-			# make sure touchpad is enabled
+# default option values
+area=select
+save=clip
+
+# make a screenshot
+screenshot() {
+	case $area in
+		full) maim ;;
+		select) # make sure touchpad is enabled
 			case $(tp state) in
 				off)
 					tp toggle
@@ -17,29 +17,32 @@ case $(printf '%s\n' 'Whole screen' 'Select area' | dmenu -p 'Screenshot:' -l 2)
 					tp toggle ;;
 				*) maim -s ;;
 			esac
-		} ;;
-	*) exit 1 ;;
-esac
+	esac
+}
 
-# choose what to do with a screenshot
-case $(printf '%s\n' Clipboad File Open | dmenu -p 'Save to:' -l 3) in
-	C*)
-		savecmd() {
-			xclip -i -select clipboad -t image/png
-		} ;;
-	F*)
-		savecmd() {
-			cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png"
-		} ;;
-	O*)
-		savecmd() {
+# save image
+saveimg() {
+	case $save in
+		clip) xclip -i -select clipboad -t image/png ;;
+		file) cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png" ;;
+		open)
 			tmp=$(mktemp /tmp/shotXXXX) || return
 			cat >"$tmp"
 			sxiv "$tmp"
 			rm "$tmp"
-		} ;;
-	*) exit 1 ;;
-esac
+	esac
+}
 
-# screenshot
-screenshotcmd | savecmd
+# parse options
+while getopts ':Fof' opt; do
+	case $opt in
+		F) area=full ;;
+		o) save=open ;;
+		f) save=file ;;
+		*)
+			echo "usage: ${0##*/} [-Fof]"
+			exit 1
+	esac
+done
+
+screenshot | saveimg
