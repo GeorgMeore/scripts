@@ -22,10 +22,8 @@ ffstart() {
 
 # wait for ffmpeg to terminate
 ffwait() {
-	# we use loop here beacause signals interrupt wait
-	while ! wait; do
-		:
-	done
+	# we use loop here because signals interrupt wait
+	while ! wait; do : ;done
 }
 
 # kill ffmpeg process (on SIGTERM)
