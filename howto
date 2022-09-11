@@ -16,13 +16,12 @@ topic=$(
 [ "$topic" ] || exit
 
 # display relevant lines from the howto file
-awk -v topic="$topic" '
-!/^\t/ {
-	topic_number++
-	if (topic_number > topic)
-		exit
-}
-/^\t/ {
-	if (topic_number == topic)
-		print substr($0, 2)
+awk -v topic="$topic" '{
+	if ($0 ~ /^\t/) {
+		if (topic_number == topic)
+			print substr($0, 2)
+	} else {
+		if (++topic_number > topic)
+			exit
+	}
 }' "$howtofile"
