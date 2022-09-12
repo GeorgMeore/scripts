@@ -1,36 +1,38 @@
 #!/bin/sh
 # Make screenshot.
 
+# file used for intermediate screenshot storage
+tmpfile=~/.cache/screen.png
+
 # default option values
 area=select
 save=clip
 
 # make a screenshot
 screenshot() {
+	rm -f "$tmpfile" # just in case
 	case $area in
-		full) maim ;;
-		select) # make sure touchpad is enabled
+		full) maim "$tmpfile" ;;
+		select) # make sure that touchpad is enabled
 			case $(tp state) in
 				off)
 					tp toggle
-					maim -s
+					maim -s "$tmpfile"
 					tp toggle ;;
-				*) maim -s ;;
+				*) maim -s "$tmpfile"
 			esac
 	esac
 }
 
 # save image
-saveimg() {
+imgaction() {
+	[ -f "$tmpfile" ] || return # screenshot failed
 	case $save in
-		clip) xclip -i -select clipboad -t image/png ;;
-		file) cat >"$HOME/pic/screen/$(date +'%d-%m-%y_%H:%M:%S').png" ;;
-		open)
-			tmp=$(mktemp /tmp/shotXXXX) || return
-			cat >"$tmp"
-			sxiv "$tmp"
-			rm "$tmp"
+		clip) xclip -i -select clipboad -t image/png "$tmpfile" ;;
+		file) cp "$tmpfile" ~/pic/screen/"$(date +'%d-%m-%y_%H:%M:%S').png" ;;
+		open) sxiv "$tmpfile"
 	esac
+	rm "$tmpfile"
 }
 
 # parse options
@@ -45,4 +47,6 @@ while getopts ':Fof' opt; do
 	esac
 done
 
-screenshot | saveimg
+# make a screenshot and do the thing
+screenshot
+imgaction
