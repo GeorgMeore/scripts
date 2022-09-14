@@ -1,6 +1,9 @@
 #!/bin/sh
 # Statusbar generator.
 
+# default output mode
+output=xrootname
+
 # print audio status
 aud() {
 	info=$(amixer get Master)
@@ -61,26 +64,49 @@ rss() {
 	esac
 }
 
+# output the statusline
+show() {
+	case $output in
+		xrootname) xsetroot -name "$1" ;;
+		stdout) echo "$1"
+	esac
+}
 
 # main loop
-while : ; do
-	# recompute values as necessary
-	aud="AUD: $(aud)"
-	disp="DISP: $(disp)"
-	lang="LANG: $(lang)"
-	[ $((tick % 2)) -ne 0 ] || {
-		date="$(date +'DATE: %a %-e %b %H:%M:%S')"
-	}
-	[ $((tick % 20)) -ne 0 ] || {
-		bat="BAT: $(bat)"
-	}
-	[ $((tick % 60)) -ne 0 ] || {
-		rss="RSS: $(rss)"
-	}
-	# set statusline
-	statusline=" ${aud} | ${disp} | ${bat} | ${lang} | ${rss} | ${date} "
-	xsetroot -name "$statusline" || exit 1
-	# increment counter and sleep
-	tick=$((tick + 1))
-	sleep 0.5
+sbloop() {
+	while : ; do
+		# recompute values as necessary
+		aud="AUD: $(aud)"
+		disp="DISP: $(disp)"
+		lang="LANG: $(lang)"
+		[ $((tick % 2)) -ne 0 ] || {
+			date="$(date +'DATE: %a %-e %b %H:%M:%S')"
+		}
+		[ $((tick % 20)) -ne 0 ] || {
+			bat="BAT: $(bat)"
+		}
+		[ $((tick % 60)) -ne 0 ] || {
+			rss="RSS: $(rss)"
+		}
+		# set statusline
+		statusline=" ${aud} | ${disp} | ${bat} | ${lang} | ${rss} | ${date} "
+		show "$statusline" || exit
+		# increment counter and sleep
+		tick=$((tick + 1))
+		sleep 0.5
+	done
+}
+
+# parse options
+while getopts ":xs" opt; do
+	case $opt in
+		x) output=xrootname ;;
+		s) output=stdout ;;
+		*)
+			echo "usage: ${0##*/} [-xs]"
+			exit 1
+	esac
 done
+
+# start the main loop
+sbloop
