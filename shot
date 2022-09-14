@@ -14,13 +14,10 @@ screenshot() {
 	case $area in
 		full) maim "$tmpfile" ;;
 		select) # make sure that touchpad is enabled
-			case $(tp state) in
-				off)
-					tp toggle
-					maim -s "$tmpfile"
-					tp toggle ;;
-				*) maim -s "$tmpfile"
-			esac
+			tp=$(tp state)
+			[ "$tp" = off ] && tp toggle
+			maim -s "$tmpfile"
+			[ "$tp" = off ] && tp toggle
 	esac
 }
 
