@@ -1,112 +1,162 @@
 #!/bin/sh
 # Statusbar generator.
 
-# default output mode
+# default option values
 output=xrootname
+action=run
 
-# print audio status
+# directory for runtime files
+tmpdir=/tmp/sb$DISPLAY
+
+# module: audio
 aud() {
+	runck 10 upd || return
 	info=$(amixer get Master)
 	case $info in
 		*Mono:*'[on]')
 			info=${info#*\[}
-			echo "${info%%\]*}" ;;
+			perc="${info%%\]*}" ;;
 		*Mono:*'[off]')
-			echo off ;;
+			perc=off ;;
 		*)
-			echo err ;;
+			perc=err ;;
 	esac
+	aud="AUD: $perc"
 }
 
-# print battery percentage
+# module: battery percentage
 bat() {
+	runck 20 || return
 	read -r percentage </sys/class/power_supply/BAT0/capacity
 	read -r status </sys/class/power_supply/BAT0/status
 	if [ "$status" = Charging ]; then
-		echo "charging:$percentage%"
+		perc="charging:$percentage%"
 	elif [ "$percentage" -eq 100 ]; then
-		echo "full:$percentage%"
+		perc="full:$percentage%"
 	elif [ "$percentage" -gt 14 ]; then
-		echo "$percentage%"
+		perc="$percentage%"
 	else
-		echo "low:$percentage%"
+		perc="low:$percentage%"
 	fi
+	bat="BAT: $perc"
 }
 
-# show current brightness percentage
+# module: display brightness
 disp() {
+	runck 10 upd || return
 	read -r curr </sys/class/backlight/intel_backlight/brightness
 	read -r max  </sys/class/backlight/intel_backlight/max_brightness
-	echo "$((curr * 100 / max))%"
+	disp="DISP: $((curr * 100 / max))%"
 }
 
-# print current layout
+# module: keyboard layout
 lang() {
-	setxkbmap -query | while read -r line; do
-		case $line in
-			layout*) echo "${line##* }" ;;
-		esac
-	done
+	runck 10 upd || return
+	lang="LANG: $(setxkbmap -query | awk '/layout/{print $2}')"
 }
 
-# print number of unread rss updates
+# module: rss updates
 rss() {
-	sfeedpath=~/.sfeed
-	last=$(stat -c%X "$sfeedpath/last")
-	for feed in "$sfeedpath/feeds"/*; do
-		while read -r ts rest; do
-			[ "$ts" -lt "$last" ] || new=$((new + 1))
-		done <"$feed"
-	done
+	runck 60 || return
+	last=$(stat -c%X ~/.sfeed/last)
+	new=$(awk -v ts="$last" '$1 > ts' ~/.sfeed/feeds/* | wc -l)
 	case $new in
-		'') echo none ;;
-		*) echo "new:$new" ;;
+		0) updates=none ;;
+		*) updates="new:$new" ;;
 	esac
+	rss="RSS: $updates"
+}
+
+# module: date and time
+datetime() {
+	datetime=$(date +'DATE: %a %-e %b %H:%M:%S')
 }
 
 # output the statusline
-show() {
+showstatus() {
 	case $output in
-		xrootname) xsetroot -name "$1" ;;
-		stdout) echo "$1"
+		xrootname) xsetroot -name "$statusline" ;;
+		stdout) echo "$statusline"
 	esac
+}
+
+# check if job should be run
+runck() {
+	interval=$1 # normal job interval
+	updonhup=$2 # not null if job should be run at sighup
+	[ "$updonhup" ] && [ "$hup" ] || [ "$((tick % interval))" = 0 ]
+}
+
+# recompute values and update statusline
+recompute() {
+	for func in aud disp bat lang rss datetime; do
+		$func
+	done
+	statusline=" ${aud} | ${disp} | ${bat} | ${lang} | ${rss} | ${datetime} "
+}
+
+# cleanup and exit
+finish() {
+	rm -rf "$tmpdir"
+	exit
+}
+
+# prepare for running the main loop
+setup() {
+	mkdir "$tmpdir" 2>/dev/null || {
+		echo "error: statusbar for the display $DISPLAY is already running"
+		return 1
+	}
+	trap finish EXIT TERM INT
+	echo $$ >"$tmpdir/pid"
 }
 
 # main loop
 sbloop() {
+	setup || return
+	trap hup=true HUP # sighup is used for update signalling
 	while : ; do
-		# recompute values as necessary
-		aud="AUD: $(aud)"
-		disp="DISP: $(disp)"
-		lang="LANG: $(lang)"
-		[ $((tick % 2)) -ne 0 ] || {
-			date="$(date +'DATE: %a %-e %b %H:%M:%S')"
-		}
-		[ $((tick % 20)) -ne 0 ] || {
-			bat="BAT: $(bat)"
-		}
-		[ $((tick % 60)) -ne 0 ] || {
-			rss="RSS: $(rss)"
-		}
+		# update values
+		recompute
 		# set statusline
-		statusline=" ${aud} | ${disp} | ${bat} | ${lang} | ${rss} | ${date} "
-		show "$statusline" || exit
-		# increment counter and sleep
-		tick=$((tick + 1))
-		sleep 0.5
+		showstatus || exit
+		# increment counter
+		tick=$(((tick + 1) % 256))
+		# clear sighup flag and sleep
+		hup=
+		sleep 1
 	done
 }
 
+# request statusline update
+update() {
+	pid=$(cat "$tmpdir/pid" 2>/dev/null) || {
+		echo "error: no active instance for the display $DISPLAY"
+		return 1
+	}
+	kill -HUP "$pid"
+}
+
 # parse options
-while getopts ":xs" opt; do
+while getopts ":xsu" opt; do
 	case $opt in
 		x) output=xrootname ;;
 		s) output=stdout ;;
+		u) action=update ;;
 		*)
-			echo "usage: ${0##*/} [-xs]"
+			echo "usage: ${0##*/} [-xsu]"
 			exit 1
 	esac
 done
 
-# start the main loop
-sbloop
+# check that DISPLAY is set
+[ "$DISPLAY" ] || {
+	echo 'error: DISPLAY variable is not set'
+	exit 1
+}
+
+# run
+case $action in
+	run) sbloop ;;
+	update) update ;;
+esac
