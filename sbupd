@@ -1,0 +1,21 @@
+#!/bin/sh
+# Helper script to update statusbar.
+
+# directory for statusbar runtime files
+tmpdir=/tmp/sb$DISPLAY
+
+# request statusbar update
+update() {
+	[ "$DISPLAY" ] || {
+		echo 'error: DISPLAY variable is not set'
+		exit 1
+	}
+	touch "$tmpdir/$1"
+}
+
+case $# in
+	1) update "$1" ;;
+	*)
+		echo "usage: ${0##*/} FILE"
+		exit 1
+esac
