@@ -1,16 +1,15 @@
 #!/bin/sh
 # Statusbar generator.
 
-# default option values
+# default output
 output=xrootname
-action=run
 
 # directory for runtime files
 tmpdir=/tmp/sb$DISPLAY
 
 # module: audio
 aud() {
-	runck 10 upd || return
+	runck 10 aud || return
 	info=$(amixer get Master)
 	case $info in
 		*Mono:*'[on]')
@@ -43,16 +42,14 @@ bat() {
 
 # module: display brightness
 disp() {
-	runck 10 upd || return
-	read -r curr </sys/class/backlight/intel_backlight/brightness
-	read -r max  </sys/class/backlight/intel_backlight/max_brightness
-	disp="DISP: $((curr * 100 / max))%"
+	runck 10 disp || return
+	disp="DISP: $(brtctl show)%"
 }
 
 # module: keyboard layout
 lang() {
-	runck 10 upd || return
-	lang="LANG: $(setxkbmap -query | awk '/layout/{print $2}')"
+	runck 10 lang || return
+	lang="LANG: $(layoutctl show)"
 }
 
 # module: rss updates
@@ -83,8 +80,12 @@ showstatus() {
 # check if job should be run
 runck() {
 	interval=$1 # normal job interval
-	updonhup=$2 # not null if job should be run at sighup
-	[ "$updonhup" ] && [ "$hup" ] || [ "$((tick % interval))" = 0 ]
+	updfile=$2  # update file
+	[ -f "$tmpdir/$updfile" ] && {
+		rm "$tmpdir/$updfile"
+		return
+	}
+	[ "$((tick % interval))" = 0 ]
 }
 
 # recompute values and update statusline
@@ -103,18 +104,20 @@ finish() {
 
 # prepare for running the main loop
 setup() {
+	[ "$DISPLAY" ] || {
+		echo 'error: DISPLAY variable is not set'
+		exit 1
+	}
 	mkdir "$tmpdir" 2>/dev/null || {
 		echo "error: statusbar for the display $DISPLAY is already running"
 		return 1
 	}
 	trap finish EXIT TERM INT
-	echo $$ >"$tmpdir/pid"
 }
 
 # main loop
 sbloop() {
 	setup || return
-	trap hup=true HUP # sighup is used for update signalling
 	while : ; do
 		# update values
 		recompute
@@ -122,41 +125,21 @@ sbloop() {
 		showstatus || exit
 		# increment counter
 		tick=$(((tick + 1) % 256))
-		# clear sighup flag and sleep
-		hup=
+		# update timestamp file and sleep
 		sleep 1
 	done
 }
 
-# request statusline update
-update() {
-	pid=$(cat "$tmpdir/pid" 2>/dev/null) || {
-		echo "error: no active instance for the display $DISPLAY"
-		return 1
-	}
-	kill -HUP "$pid"
-}
-
 # parse options
-while getopts ":xsu" opt; do
+while getopts ":xs" opt; do
 	case $opt in
 		x) output=xrootname ;;
 		s) output=stdout ;;
-		u) action=update ;;
 		*)
-			echo "usage: ${0##*/} [-xsu]"
+			echo "usage: ${0##*/} [-xs]"
 			exit 1
 	esac
 done
 
-# check that DISPLAY is set
-[ "$DISPLAY" ] || {
-	echo 'error: DISPLAY variable is not set'
-	exit 1
-}
-
 # run
-case $action in
-	run) sbloop ;;
-	update) update ;;
-esac
+sbloop
