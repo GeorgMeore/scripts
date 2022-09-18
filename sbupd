@@ -10,7 +10,7 @@ update() {
 		echo 'error: DISPLAY variable is not set'
 		exit 1
 	}
-	touch "$tmpdir/$1"
+	touch "$tmpdir/$1" 2>/dev/null
 }
 
 case $# in
