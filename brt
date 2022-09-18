@@ -1,0 +1,38 @@
+#!/bin/sh
+# Control the display brightness.
+
+# backlight device
+dev=/sys/class/backlight/intel_backlight
+
+# set new brightness
+chbrt() {
+	[ "$2" -gt 0 ] 2>/dev/null || {
+		echo "error: not an positive integer: $2" >&2
+		return 1
+	}
+	val=$1$2
+	new=$((curr + max*val/100))
+	# check bounds and write new value
+	echo "$((new < 0 ? 0 : (new > max ? max : new)))" >"$dev/brightness"
+	# update statusbar
+	sbupd disp
+}
+
+# get current brightness in percents
+show() {
+	echo "$((curr * 100 / max))"
+}
+
+# read current brightness
+read -r curr <"$dev/brightness"
+read -r max <"$dev/max_brightness"
+
+# process arguments
+case $1 in
+	show) show ;;
+	up) chbrt + "$2" ;;
+	down) chbrt - "$2" ;;
+	*)
+		echo "usage: ${0##*/} { show | up VAL | down VAL }"
+		exit 1
+esac
