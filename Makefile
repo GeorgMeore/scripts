@@ -2,7 +2,7 @@ PREFIX = $(HOME)/.local
 DATE = $(shell date +%Y.%m.%d)
 
 SCRIPTS = \
-	sb tp chlt chbrt \
+	sb sbupd tp kbl brt vol \
 	shot ffrec pw mmv\
 	news bm howto \
 

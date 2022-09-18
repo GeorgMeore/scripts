@@ -1,0 +1,43 @@
+#!/bin/sh
+# Control the keyboard layout.
+
+# colon-separated list of layouts
+layouts=us:ru
+
+# get current layout
+show() {
+	setxkbmap -query | awk '/layout/{print $2}'
+}
+
+# find next layout
+findnext() {
+	awk -v layoutstr="$layouts" '{
+		split(layoutstr, layouts, ":")
+		for (i = 1; i <= length(layouts); i++)
+			if (layouts[i] == $0)
+				curr = i
+		print layouts[curr % length(layouts) + 1]
+	}'
+}
+
+# set given layout
+load() {
+	setxkbmap -layout "$1"
+	# update statusbar
+	sbupd lang
+}
+
+# set next layout
+next() {
+	load "$(show | findnext)"
+}
+
+# process arguments
+case $1 in
+	load) load "$2" ;;
+	next) next ;;
+	show) show ;;
+	*)
+		echo "usage: ${0##*/} { load LAYOUT | next | show }"
+		exit 1
+esac
