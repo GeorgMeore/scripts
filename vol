@@ -8,13 +8,20 @@ chvol() {
 	sbupd aud
 }
 
+# toggle volume
+toggle() {
+	amixer -q sset Master toggle
+	# update statusbar
+	sbupd aud
+}
+
 # print volume level in percents
 show() {
 	info=$(amixer get Master)
 	case $info in
 		*Mono:*'[on]')
 			info=${info#*\[}
-			echo "${info%%%\]*}" ;;
+			echo "${info%%\]*}" ;;
 		*Mono:*'[off]')
 			echo off ;;
 		*)
@@ -27,6 +34,7 @@ case $1 in
 	show) show ;;
 	raise) chvol + ;;
 	lower) chvol - ;;
+	toggle) toggle ;;
 	*)
 		echo "usage: ${0##*/} { show | raise | lower }"
 		exit 1
