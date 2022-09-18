@@ -7,22 +7,6 @@ output=xrootname
 # directory for runtime files
 tmpdir=/tmp/sb$DISPLAY
 
-# module: audio
-aud() {
-	runck 10 aud || return
-	info=$(amixer get Master)
-	case $info in
-		*Mono:*'[on]')
-			info=${info#*\[}
-			perc="${info%%\]*}" ;;
-		*Mono:*'[off]')
-			perc=off ;;
-		*)
-			perc=err ;;
-	esac
-	aud="AUD: $perc"
-}
-
 # module: battery percentage
 bat() {
 	runck 20 || return
@@ -40,16 +24,22 @@ bat() {
 	bat="BAT: $perc"
 }
 
+# module: audio
+aud() {
+	runck 10 aud || return
+	aud="AUD: $(vol show)"
+}
+
 # module: display brightness
 disp() {
 	runck 10 disp || return
-	disp="DISP: $(brtctl show)%"
+	disp="DISP: $(brt show)"
 }
 
 # module: keyboard layout
 lang() {
 	runck 10 lang || return
-	lang="LANG: $(layoutctl show)"
+	lang="LANG: $(kbl show)"
 }
 
 # module: rss updates
@@ -79,8 +69,7 @@ showstatus() {
 
 # check if job should be run
 runck() {
-	interval=$1 # normal job interval
-	updfile=$2  # update file
+	interval=$1 updfile=$2
 	[ -f "$tmpdir/$updfile" ] && {
 		rm "$tmpdir/$updfile"
 		return
@@ -112,7 +101,7 @@ setup() {
 		echo "error: statusbar for the display $DISPLAY is already running"
 		return 1
 	}
-	trap finish EXIT TERM INT
+	trap finish EXIT TERM INT HUP
 }
 
 # main loop
@@ -122,7 +111,7 @@ sbloop() {
 		# update values
 		recompute
 		# set statusline
-		showstatus || exit
+		showstatus || break
 		# increment counter
 		tick=$(((tick + 1) % 256))
 		# update timestamp file and sleep

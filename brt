@@ -20,7 +20,7 @@ chbrt() {
 
 # get current brightness in percents
 show() {
-	echo "$((curr * 100 / max))"
+	echo "$((curr * 100 / max))%"
 }
 
 # read current brightness
