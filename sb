@@ -95,8 +95,9 @@ finish() {
 setup() {
 	[ "$DISPLAY" ] || {
 		echo 'error: DISPLAY variable is not set'
-		exit 1
+		return 1
 	}
+	trap '' TERM INT HUP
 	mkdir "$tmpdir" 2>/dev/null || {
 		echo "error: statusbar for the display $DISPLAY is already running"
 		return 1
@@ -111,7 +112,7 @@ sbloop() {
 		# update values
 		recompute
 		# set statusline
-		showstatus || break
+		showstatus || return
 		# increment counter
 		tick=$(((tick + 1) % 256))
 		# update timestamp file and sleep
