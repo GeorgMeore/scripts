@@ -15,7 +15,7 @@ chbrt() {
 	# check bounds and write new value
 	echo "$((new < 0 ? 0 : (new > max ? max : new)))" >"$dev/brightness"
 	# update statusbar
-	sbupd disp
+	sb -u disp
 }
 
 # get current brightness in percents

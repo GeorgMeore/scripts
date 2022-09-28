@@ -1,9 +1,6 @@
 #!/bin/sh
 # Statusbar generator.
 
-# default output
-output=xrootname
-
 # directory for runtime files
 tmpdir=/tmp/sb$DISPLAY
 
@@ -113,23 +110,44 @@ sbloop() {
 		recompute
 		# set statusline
 		showstatus || return
-		# increment counter
+		# increment counter and sleep
 		tick=$(((tick + 1) % 256))
-		# update timestamp file and sleep
 		sleep 1
 	done
 }
 
+# request statusbar update
+update() {
+	[ "$DISPLAY" ] || {
+		echo 'error: DISPLAY variable is not set'
+		return 1
+	}
+	[ "$target" ] || {
+		echo 'error: null module name'
+		return 1
+	}
+	touch "$tmpdir/$target" 2>/dev/null
+}
+
+# default option values
+output=xrootname
+action=start
+target=
+
 # process options
-while getopts ":xs" opt; do
+while getopts ":xsu:" opt; do
 	case $opt in
-		x) output=xrootname ;;
-		s) output=stdout ;;
+		x) action=start output=xrootname ;;
+		s) action=start output=stdout ;;
+		u) action=update target=$OPTARG ;;
 		*)
-			echo "usage: ${0##*/} [-xs]"
+			echo "usage: ${0##*/} { [-xs] | -u MODULE }"
 			exit 1
 	esac
 done
 
 # run
-sbloop
+case $action in
+	start) sbloop ;;
+	update) update ;;
+esac

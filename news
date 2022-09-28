@@ -52,4 +52,4 @@ newfeeds |
 	xargs -rd'\n' firefox
 
 # update statusbar
-sbupd rss
+sb -u rss
