@@ -1,62 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 # Statusbar generator.
 
 # directory for runtime files
 tmpdir=/tmp/sb$DISPLAY
 
-# module: battery percentage
-bat() {
-	runck 20 || return
-	read -r percentage </sys/class/power_supply/BAT0/capacity
-	read -r status </sys/class/power_supply/BAT0/status
-	if [ "$status" = Charging ]; then
-		perc="charging:$percentage%"
-	elif [ "$percentage" -eq 100 ]; then
-		perc="full:$percentage%"
-	elif [ "$percentage" -gt 14 ]; then
-		perc="$percentage%"
-	else
-		perc="low:$percentage%"
-	fi
-	bat="BAT: $perc"
+# configuration file defining modules and their order
+config=~/.sbrc
+
+error() {
+	echo "error: $1" >&2
 }
 
-# module: audio
-aud() {
-	runck 10 aud || return
-	aud="AUD: $(vol show)"
-}
-
-# module: display brightness
-disp() {
-	runck 10 disp || return
-	disp="DISP: $(brt show)"
-}
-
-# module: keyboard layout
-lang() {
-	runck 10 lang || return
-	lang="LANG: $(kbl show)"
-}
-
-# module: rss updates
-rss() {
-	runck 60 rss || return
-	last=$(stat -c%X ~/.sfeed/last)
-	new=$(awk -v ts="$last" '$1 > ts' ~/.sfeed/feeds/* | wc -l)
-	case $new in
-		0) updates=none ;;
-		*) updates="new:$new" ;;
-	esac
-	rss="RSS: $updates"
-}
-
-# module: date and time
-datetime() {
-	datetime=$(date +'DATE: %a %-e %b %H:%M:%S')
-}
-
-# output the statusline
 showstatus() {
 	case $output in
 		xrootname) xsetroot -name "$statusline" ;;
@@ -64,66 +18,73 @@ showstatus() {
 	esac
 }
 
-# check if job should be run
 runck() {
-	interval=$1 updfile=$2
+	interval=$1 # in seconds
+	updfile=$2
 	[ -f "$tmpdir/$updfile" ] && {
 		rm "$tmpdir/$updfile"
 		return
 	}
-	[ "$((tick % interval))" = 0 ]
+	[ "$(((tick * 2) % interval))" = 0 ]
 }
 
-# recompute values and update statusline
 recompute() {
-	for func in aud disp bat lang rss datetime; do
-		$func
+	${modules[0]}
+	statusline=${!modules[0]}
+	for module in "${modules[@]:1}"; do
+		$module
+		statusline+=" | ${!module}"
 	done
-	statusline=" ${aud} | ${disp} | ${bat} | ${lang} | ${rss} | ${datetime} "
+	statusline+=' '
 }
 
-# cleanup and exit
 finish() {
 	rm -rf "$tmpdir"
 	exit
 }
 
-# prepare for running the main loop
-setup() {
-	[ "$DISPLAY" ] || {
-		echo 'error: DISPLAY variable is not set'
+loadconfig() {
+	source "$config" || {
+		error "failed to load configuraiton from $config"
 		return 1
 	}
+	[ "${#modules[@]}" -gt 0 ] || {
+		error 'no modules configured'
+		return 1
+	}
+}
+
+setup() {
+	[ "$DISPLAY" ] || {
+		error 'DISPLAY variable is not set'
+		return 1
+	}
+	loadconfig || return
 	trap '' TERM INT HUP
 	mkdir "$tmpdir" 2>/dev/null || {
-		echo "error: statusbar for the display $DISPLAY is already running"
+		error "statusbar for the display $DISPLAY is already running"
 		return 1
 	}
 	trap finish EXIT TERM INT HUP
 }
 
-# main loop
 sbloop() {
 	setup || return
 	while : ; do
-		# update values
 		recompute
-		# set statusline
 		showstatus || return
-		# increment counter and sleep
-		tick=$(((tick + 1) % 256))
-		sleep 1
+		tick=$(((tick + 1) % 1000))
+		sleep 0.5
 	done
 }
 
-# request statusbar update
 update() {
 	[ "$DISPLAY" ] || {
-		echo 'error: DISPLAY variable is not set'
+		error 'DISPLAY variable is not set'
 		return 1
 	}
 	[ "$target" ] || {
-		echo 'error: null module name'
+		error 'null module name'
 		return 1
 	}
 	touch "$tmpdir/$target" 2>/dev/null
@@ -134,7 +95,6 @@ output=xrootname
 action=start
 target=
 
-# process options
 while getopts ":xsu:" opt; do
 	case $opt in
 		x) action=start output=xrootname ;;
@@ -146,7 +106,6 @@ while getopts ":xsu:" opt; do
 	esac
 done
 
-# run
 case $action in
 	start) sbloop ;;
 	update) update ;;
