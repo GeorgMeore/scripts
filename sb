@@ -5,7 +5,7 @@
 tmpdir=/tmp/sb$DISPLAY
 
 # configuration file defining modules and their order
-config=~/.sbrc
+config=~/.scripts/sb.conf
 
 error() {
 	echo "error: $1" >&2
@@ -19,21 +19,25 @@ showstatus() {
 }
 
 runck() {
-	interval=$1 # in seconds
-	updfile=$2
-	[ -f "$tmpdir/$updfile" ] && {
-		rm "$tmpdir/$updfile"
+	intv=$1 # interval in seconds
+	file=$2 # update file
+	[ -f "$tmpdir/$file" ] && {
+		rm "$tmpdir/$file"
 		return
 	}
-	[ "$(((tick * 2) % interval))" = 0 ]
+	[ "$(((tick / 2) % (intv ? intv : 1)))" = 0 ]
 }
 
 recompute() {
-	${modules[0]}
-	statusline=${!modules[0]}
-	for module in "${modules[@]:1}"; do
-		$module
-		statusline+=" | ${!module}"
+	statusline=
+	for module in "${modules[@]}"; do
+		name=${module%:*} intv=${module#*:}
+		runck "$intv" "$name" && "$name"
+		if ! [ "$statusline" ]; then
+			statusline=${!name}
+		else
+			statusline+=" | ${!name}"
+		fi
 	done
 	statusline+=' '
 }
@@ -52,6 +56,12 @@ loadconfig() {
 		error 'no modules configured'
 		return 1
 	}
+	for module in "${modules[@]}"; do
+		[[ "$module" = ?*:?* ]] || {
+			error "invalid module configuration: $module"
+			return 1
+		}
+	done
 }
 
 setup() {
