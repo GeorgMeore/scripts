@@ -7,6 +7,11 @@ tmpdir=/tmp/sb$DISPLAY
 # configuration file defining modules and their order
 config=~/.scripts/sb.conf
 
+# default option values
+output=xrootname
+action=start
+target=
+
 error() {
 	echo "error: $1" >&2
 }
@@ -25,13 +30,13 @@ runck() {
 		rm "$tmpdir/$file"
 		return
 	}
-	[ "$(((tick / 2) % (intv ? intv : 1)))" = 0 ]
+	[ "$(((tick / 2) % intv))" = 0 ]
 }
 
 recompute() {
 	statusline=
 	for module in "${modules[@]}"; do
-		name=${module%:*} intv=${module#*:}
+		name=${module%%:*} intv=${module#*:}
 		runck "$intv" "$name" && "$name"
 		if ! [ "$statusline" ]; then
 			statusline=${!name}
@@ -47,6 +52,22 @@ finish() {
 	exit
 }
 
+modcfgck() {
+	[[ $1 = *:* ]] || {
+		error "invalid format: $1"
+		return 1
+	}
+	name=${module%%:*} intv=${module#*:}
+	[ "$(type -t "$name")" = function ] || {
+		error "not a function: $name in $1"
+		return 1
+	}
+	[ "$intv" -gt 0 ] || {
+		error "not a positive integer: $intv in $1"
+		return 1
+	}
+}
+
 loadconfig() {
 	source "$config" || {
 		error "failed to load configuraiton from $config"
@@ -57,10 +78,7 @@ loadconfig() {
 		return 1
 	}
 	for module in "${modules[@]}"; do
-		[[ "$module" = ?*:?* ]] || {
-			error "invalid module configuration: $module"
-			return 1
-		}
+		modcfgck "$module" || return
 	done
 }
 
@@ -99,11 +117,6 @@ update() {
 	}
 	touch "$tmpdir/$target" 2>/dev/null
 }
-
-# default option values
-output=xrootname
-action=start
-target=
 
 while getopts ":xsu:" opt; do
 	case $opt in
