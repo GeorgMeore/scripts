@@ -24,7 +24,7 @@ findnext() {
 load() {
 	setxkbmap -layout "$1"
 	# update statusbar
-	sb -u lang
+	sbupd lang
 }
 
 # set next layout

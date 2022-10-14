@@ -5,14 +5,14 @@
 chvol() {
 	amixer -q sset Master 0.75db"$1"
 	# update statusbar
-	sb -u aud
+	sbupd aud
 }
 
 # toggle volume
 toggle() {
 	amixer -q sset Master toggle
 	# update statusbar
-	sb -u aud
+	sbupd aud
 }
 
 # print volume level in percents
