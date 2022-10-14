@@ -1,16 +1,11 @@
 #!/bin/bash
 # Statusbar generator.
 
-# directory for runtime files
-tmpdir=/tmp/sb$DISPLAY
+tmpdir=/tmp/sb$DISPLAY  # directory for runtime files
+config=~/.scripts/sb.conf  # configuration file
 
-# configuration file defining modules and their order
-config=~/.scripts/sb.conf
-
-# default option values
-output=xrootname
-action=start
-target=
+output=xrootname  # default output
+frequency=1  # default frequency
 
 error() {
 	echo "error: $1" >&2
@@ -30,7 +25,7 @@ runck() {
 		rm "$tmpdir/$file"
 		return
 	}
-	[ "$(((tick / 2) % intv))" = 0 ]
+	[ "$((tick % (intv * frequency)))" = 0 ]
 }
 
 recompute() {
@@ -80,13 +75,13 @@ loadconfig() {
 	for module in "${modules[@]}"; do
 		modcfgck "$module" || return
 	done
+	[ "$frequency" -gt 0 ] 2>/dev/null || {
+		error "invalid frequency value: $frequency"
+		return 1
+	}
 }
 
 setup() {
-	[ "$DISPLAY" ] || {
-		error 'DISPLAY variable is not set'
-		return 1
-	}
 	loadconfig || return
 	trap '' TERM INT HUP
 	mkdir "$tmpdir" 2>/dev/null || {
@@ -98,38 +93,23 @@ setup() {
 
 sbloop() {
 	setup || return
+	sleeptime=$(echo "$frequency" | awk '{print 1/$1}')
 	while : ; do
 		recompute
 		showstatus || return
 		tick=$(((tick + 1) % 1000))
-		sleep 0.5
+		sleep "$sleeptime"
 	done
 }
 
-update() {
-	[ "$DISPLAY" ] || {
-		error 'DISPLAY variable is not set'
-		return 1
-	}
-	[ "$target" ] || {
-		error 'null module name'
-		return 1
-	}
-	touch "$tmpdir/$target" 2>/dev/null
-}
-
-while getopts ":xsu:" opt; do
+while getopts ":xs" opt; do
 	case $opt in
-		x) action=start output=xrootname ;;
-		s) action=start output=stdout ;;
-		u) action=update target=$OPTARG ;;
+		x) output=xrootname ;;
+		s) output=stdout ;;
 		*)
-			echo "usage: ${0##*/} { [-xs] | -u MODULE }"
+			echo "usage: ${0##*/} [-xs]"
 			exit 1
 	esac
 done
 
-case $action in
-	start) sbloop ;;
-	update) update ;;
-esac
+sbloop
