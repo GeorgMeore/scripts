@@ -12,8 +12,8 @@ ffstart() {
 		-f x11grab \
 		-s 1920x1080 \
 		-i "$DISPLAY" \
-		-f alsa \
-		-i hw:0 \
+		-f pulse \
+		-i default \
 		-r 25 \
 		-c:v libx264 \
 		-c:a flac \

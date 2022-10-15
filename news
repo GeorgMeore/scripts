@@ -13,6 +13,7 @@ getlast() {
 	else
 		stat -c%X "$tsfile"
 		touch "$tsfile"
+		sbupd rss
 	fi
 }
 
@@ -50,6 +51,3 @@ newfeeds |
 	dmenu -i -l 10 -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
 	awk '{print $NF}' |
 	xargs -rd'\n' firefox
-
-# update statusbar
-sbupd rss
