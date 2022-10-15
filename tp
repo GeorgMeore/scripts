@@ -2,10 +2,10 @@
 # Control touchpad state.
 
 # touchpad device name
-name='DELL0767:00 06CB:7E92 Touchpad'
+touchpad='ETPS/2 Elantech Touchpad'
 
 # get current state
-cur_state=$(xinput --list-props "$name" | awk '/Device Enabled/ { print $4 }')
+cur_state=$(xinput --list-props "$touchpad" | awk '/Device Enabled/ { print $4 }')
 [ "$cur_state" ] || {
 	echo "${0##*/}: couldn't get current touchpad state" >&2
 	exit 1
@@ -20,8 +20,8 @@ case $1 in
 		esac ;;
 	t|toggle) # toggle state
 		case $cur_state in
-			1) xinput --disable "$name"; xdotool mousemove 1920 0    ;;
-			0) xinput --enable  "$name"; xdotool mousemove 960  540  ;;
+			1) xinput --disable "$touchpad"; xdotool mousemove 1920 1080 ;;
+			0) xinput --enable  "$touchpad"; xdotool mousemove 960  540 ;;
 			*) echo "${0##*/}: corrupted state value"
 		esac ;;
 	*)

@@ -1,4 +1,4 @@
-PREFIX = $(HOME)/.local
+PREFIX = /usr/local
 DATE = $(shell date +%Y.%m.%d)
 
 SCRIPTS = \
@@ -7,7 +7,7 @@ SCRIPTS = \
 	news bm howto \
 
 .PHONY: install
-install:
+install: $(SCRIPTS)
 	mkdir -p "$(PREFIX)/bin"
 	cp -f $(SCRIPTS) "$(PREFIX)/bin"
 

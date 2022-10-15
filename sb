@@ -2,7 +2,7 @@
 # Statusbar generator.
 
 tmpdir=/tmp/sb$DISPLAY  # directory for runtime files
-config=~/.scripts/sb.conf  # configuration file
+config=~/.sbrc  # configuration file
 
 output=xrootname  # default output
 frequency=1  # default frequency
