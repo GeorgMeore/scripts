@@ -48,6 +48,6 @@ newfeeds() {
 # show news menu
 last=$(getlast "$@")
 newfeeds |
-	dmenu -i -l 10 -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
+	dmenu -i -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
 	awk '{print $NF}' |
 	xargs -rd'\n' firefox

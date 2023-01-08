@@ -45,13 +45,13 @@ trap '' TERM
 if mkdir "$lockdir" 2>/dev/null; then
 	# recorder branch
 	echo $$ >"$pidfile"
-	case $(printf '%s\n' Yes No | dmenu -l 10 -p 'Start recording?') in
+	case $(printf '%s\n' Yes No | dmenu -p 'Start recording?') in
 		Y*) record
 	esac
 	rm -r "$lockdir"
 else
 	# killer branch
-	case $(printf '%s\n' Yes No | dmenu -l 10 -p 'Stop recording?') in
+	case $(printf '%s\n' Yes No | dmenu -p 'Stop recording?') in
 		Y*) pkill -F "$pidfile" 2>/dev/null ;;
 	esac
 fi
