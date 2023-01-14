@@ -4,6 +4,9 @@
 # file with howtos
 howtofile=~/.howto
 
+# check if howto file exists
+[ -f "$howtofile" ] || exit
+
 # select topic
 topic=$(
 	grep -v '^	' "$howtofile"  |
