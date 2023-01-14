@@ -2,7 +2,7 @@
 # View howtos
 
 # file with howtos
-howtofile=~/doc/notes/howto
+howtofile=~/.howto
 
 # select topic
 topic=$(
