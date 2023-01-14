@@ -4,7 +4,7 @@
 tmpdir=/tmp/sb$DISPLAY  # directory for runtime files
 config=~/.sbrc  # configuration file
 
-output=xrootname  # default output
+output=stdout  # default output
 frequency=1  # default frequency
 
 error() {
@@ -75,6 +75,10 @@ loadconfig() {
 	for module in "${modules[@]}"; do
 		modcfgck "$module" || return
 	done
+	[ "$output" = stdout ] || [ "$output" = xrootname ] || {
+		error "invalid output value: $output"
+		return 1
+	}
 	[ "$frequency" -gt 0 ] 2>/dev/null || {
 		error "invalid frequency value: $frequency"
 		return 1
@@ -101,15 +105,5 @@ sbloop() {
 		sleep "$sleeptime"
 	done
 }
-
-while getopts ":xs" opt; do
-	case $opt in
-		x) output=xrootname ;;
-		s) output=stdout ;;
-		*)
-			echo "usage: ${0##*/} [-xs]"
-			exit 1
-	esac
-done
 
 sbloop
