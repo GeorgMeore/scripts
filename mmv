@@ -1,12 +1,10 @@
 #!/bin/sh
 # mass mv
 
-# write error message
 err() {
 	echo "error: $1" >&2
 }
 
-# make temporary directory used for file lists
 mktmpdir() {
 	tmp=$(mktemp -d /tmp/mmvXXX) || {
 		err 'failed to create temporary directory'
@@ -15,7 +13,6 @@ mktmpdir() {
 	trap 'rm -rf "$tmp"' EXIT
 }
 
-# perform renaming
 rename() {
 	while read -r old && read -r new; do
 		[ "$old" != "$new" ] || continue
@@ -23,7 +20,6 @@ rename() {
 	done
 }
 
-# main routine
 mmv() {
 	printf '%s\n' "$@" | tee "$tmp/old" >"$tmp/new"
 	$EDITOR "$tmp/new" || {
