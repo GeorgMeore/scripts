@@ -13,7 +13,7 @@ getlast() {
 	else
 		stat -c%X "$tsfile"
 		touch "$tsfile"
-		sbupd rss
+		sb upd rss
 	fi
 }
 

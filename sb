@@ -106,4 +106,22 @@ sbloop() {
 	done
 }
 
-sbloop
+update() {
+	for target in "$@"; do
+		[ "$target" ] || {
+			error 'null module name'
+			continue
+		}
+		touch "$tmpdir/$target" 2>/dev/null
+	done
+}
+
+if [ "$#:$1" = 1:run ]; then
+	sbloop
+elif [ "$1" = upd ]; then
+	shift
+	update "$@"
+else
+	echo "usage: ${0##*/} { run | upd MODULES... }"
+	exit 1
+fi
