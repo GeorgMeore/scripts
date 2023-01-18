@@ -4,29 +4,39 @@
 # backlight device name
 dev='/sys/class/backlight/amdgpu_bl0'
 
-chbrt() {
-	[ "$2" -gt 0 ] 2>/dev/null || {
-		echo "error: not an positive integer: $2" >&2
+setenv() {
+	[ -r "$dev/brightness" ] && [ -r "$dev/max_brightness" ] || {
+		echo "error: cannot read device status: $dev"
 		return 1
 	}
-	val=$1$2
-	new=$((curr + max*val/100))
-	# check bounds and write new value
+	read -r curr <"$dev/brightness"
+	read -r max <"$dev/max_brightness"
+}
+
+chbrt() {
+	setenv || return
+	[ "$1" -eq "$1" ] 2>/dev/null || {
+		echo "error: not an integer: $1" >&2
+		return 1
+	}
+	new=$((curr + max*$1/100))
+	[ -w "$dev/brightness" ] || {
+		echo "error: cannot set device brightness: $dev"
+		return 1
+	}
 	echo "$((new < 0 ? 0 : (new > max ? max : new)))" >"$dev/brightness"
 }
 
 show() {
-	echo "$((curr * 100 / max))%"
+	setenv || return
+	echo "$((curr * 100 / max))"
 }
 
-read -r curr <"$dev/brightness"
-read -r max <"$dev/max_brightness"
-
 case $1 in
-	show) show ;;
-	up) chbrt + "$2" ;;
-	down) chbrt - "$2" ;;
+	g|get) show ;;
+	-*) chbrt "$1" ;;
+	+*) chbrt "${1#+}" ;;
 	*)
-		echo "usage: ${0##*/} { show | up VAL | down VAL }"
+		echo "usage: ${0##*/} { get | +VAL | -VAL }"
 		exit 1
 esac
