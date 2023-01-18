@@ -7,11 +7,11 @@ tsfile=$sfeedroot/last
 sfeedpath=$sfeedroot/feeds
 
 # get last access time
-getlast() {
+setenv() {
 	if [ $# -gt 0 ]; then
-		date -d"$*" +%s
+		last=$(date -d"$*" +%s)
 	else
-		stat -c%X "$tsfile"
+		last=$(stat -c%X "$tsfile")
 		touch "$tsfile"
 		sb upd rss
 	fi
@@ -45,8 +45,7 @@ newfeeds() {
 	fi
 }
 
-# show news menu
-last=$(getlast "$@")
+setenv "$@"
 newfeeds |
 	dmenu -i -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
 	awk '{print $NF}' |
