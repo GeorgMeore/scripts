@@ -17,7 +17,7 @@ ffstart() {
 		-r 25 \
 		-c:v libx264 \
 		-c:a flac \
-		"$HOME/video/rec/$(date +'%d-%m-%y_%H:%M:%S').mkv" &
+		"$HOME/$(date +'%d-%m-%y_%H:%M:%S').mkv" &
 }
 
 # wait for ffmpeg to terminate
