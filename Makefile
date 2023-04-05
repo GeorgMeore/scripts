@@ -2,7 +2,7 @@ PREFIX = /usr/local
 DATE = $(shell date +%Y.%m.%d)
 
 SCRIPTS = \
-	sb tp brt \
+	sb tp brt clip \
 	shot ffrec pw mmv\
 	news bm howto \
 
