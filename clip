@@ -1,0 +1,4 @@
+#!/bin/sh
+# Convenience wrapper for xclip.
+
+exec xclip -selection clipboard "$@"
