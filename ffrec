@@ -40,7 +40,7 @@ record() {
 	ffwait
 }
 
-# ignore sigterm for now
+# ignore SIGTERM before trying to acquire the lock
 trap '' TERM
 
 if mkdir "$lockdir" 2>/dev/null; then
