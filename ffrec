@@ -15,9 +15,10 @@ ffstart() {
 		-f pulse \
 		-i default \
 		-r 25 \
+		-pix_fmt yuv420p \
 		-c:v libx264 \
-		-c:a flac \
-		"$HOME/$(date +'%d-%m-%y_%H:%M:%S').mkv" &
+		-c:a aac \
+		"$HOME/$(date +'%d-%m-%y_%H:%M:%S').mp4" &
 }
 
 # wait for ffmpeg to terminate
