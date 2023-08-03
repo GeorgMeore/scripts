@@ -27,7 +27,7 @@ imgaction() {
 	case $save in
 		toclip) xclip -i -select clipboad -t image/png "$tmpfile" ;;
 		tofile) cp "$tmpfile" "$HOME/$(date +'%d-%m-%y_%H:%M:%S').png" ;;
-		open) sxiv "$tmpfile"
+		open) nsxiv "$tmpfile"
 	esac
 	rm "$tmpfile"
 }
