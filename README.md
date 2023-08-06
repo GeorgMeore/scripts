@@ -43,9 +43,9 @@ then prints the body of the selected one.
 ### `mmv`
 This script allows you to mass-move files.
 
-It takes as arguments a list of files to move and opens with your `$EDITOR`
-a temporary file containing those names, one per line (names are assumed to
-have no newlines), which can then be edited. When the editor is closed, the files are moved.
+It takes a list of files to move as arguments and opens a temporary file containing those names
+one per line with your `$EDITOR` (names are assumed to have no newlines).
+You can then edit it. When the editor is closed, the files are moved.
 
 ### `news`
 A script for viewing rss feed updates.
@@ -62,10 +62,10 @@ It is also possible to specify the starting date in the arguments
 `pw` takes a command along with its arguments and runs it only when all of stdin is read.
 
 It is useful in situations where you want to run multiple interactive commands in one pipeline.
-For example `find -type d | fzf | xargs -d'\n' ls | pw fzf`: if you didn't use `pw` both
+For example, `find -type d | fzf | xargs -d'\n' ls | pw fzf`: if you didn't use `pw` both
 instances of `fzf` would try to output to the terminal at the same time.
 Another use case would be building pipelines that both read and modify some file.
-For example `grep foo somefile | pw tee somefile`: without `pw` the contents of `somefile`
+For example, `grep foo somefile | pw tee somefile`: without `pw` the contents of `somefile`
 would just be deleted.
 
 ### `sb`
@@ -96,15 +96,15 @@ modules=(
 ```
 
 `sb` also supports on-demand updating of module values via `sb upd MODULE`.
-For example in my configuration there is `rss` module that shows me the
+For example, in my configuration, there is `rss` module that shows me the
 number of new items (since I last checked them via `news`) in my rss feeds.
-Usually it is updated every two minutes. But when I actually run `news` it explicitly
-requests an update (via `sb upd rss`) and I can see in my statusbar rightaway
+Usually, it is updated every two minutes. But when I actually run `news` it explicitly
+requests an update (via `sb upd rss`), and I can see in my statusbar right away
 that there are no new items.
 
 ### `shot`
-`maim` wrapper script. It provides flags for specifying what
-part of the screen needs be saved (full or manually selected region),
+A wrapper around `maim`. It provides flags for specifying what
+part of the screen needs to be saved (full or manually selected region),
 and what to do with the image (save to a file, open in the image viewer or copy to the clipboard).
 It also takes care to enable (and disable afterwards) the touchpad (if it is switched off)
 if manual selection is used.
