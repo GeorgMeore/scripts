@@ -6,17 +6,6 @@ sfeedroot=~/.sfeed
 tsfile=$sfeedroot/last
 sfeedpath=$sfeedroot/feeds
 
-# get last access time
-setenv() {
-	if [ $# -gt 0 ]; then
-		last=$(date -d"$*" +%s)
-	else
-		last=$(stat -c%X "$tsfile")
-		touch "$tsfile"
-		sb upd rss
-	fi
-}
-
 # prepend filenames and filter out feeds older than $1
 feedfilter() {
 	awk -v last="$last" '{
@@ -45,7 +34,28 @@ newfeeds() {
 	fi
 }
 
-setenv "$@"
+if ! [ -d "$sfeedroot" ]; then
+	echo "error: $sfeedroot doesn't exist"
+	exit 1
+fi
+
+# get last access time
+if [ $# -gt 0 ]; then
+	last=$(date -d"$*" +%s)
+else
+	if [ -f "$tsfile" ]; then
+		last=$(stat -c%X "$tsfile")
+	else
+		last=0
+	fi
+	touch "$tsfile"
+	sb upd rss
+fi
+
+if ! [ "$last" ]; then
+	exit 1
+fi
+
 newfeeds |
 	dmenu -i -p "Since $(date -d "@$last" +'%Y %b %d %H:%M:%S')" |
 	awk '{print $NF}' |
