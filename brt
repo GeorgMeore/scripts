@@ -32,11 +32,11 @@ show() {
 	echo "$((curr * 100 / max))"
 }
 
-case $1 in
-	g|get) show ;;
-	-*) chbrt "$1" ;;
-	+*) chbrt "${1#+}" ;;
+case $#$1 in
+	0) show ;;
+	1-*) chbrt "${1#1}" ;;
+	1+*) chbrt "${1#1+}" ;;
 	*)
-		echo "usage: ${0##*/} { get | +VAL | -VAL }"
+		echo "usage: ${0##*/} [+VAL | -VAL]"
 		exit 1
 esac
