@@ -27,19 +27,6 @@ and then starts an `ffmpeg` process.
 If you call it once more it asks you if you want to stop recording
 and then terminates the recording.
 
-### `howto`
-This script is kind of like `bm`, but a little different.
-
-When started it reads `~/.howto` file that is assumed to have
-the following format:
-```
-Some one-line description of some thing
-	A body which is a sequence of tab-indented lines.
-	This could be a list of commands to do the described thing.
-```
-Then the script lets you select one of the descriptions via `fzf` and
-then prints the body of the selected one.
-
 ### `mmv`
 This script allows you to mass-move files.
 
