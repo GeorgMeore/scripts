@@ -1,10 +1,7 @@
 PREFIX = /usr/local
 DATE = $(shell date +%Y.%m.%d)
 
-SCRIPTS = \
-	sb tp brt clip \
-	shot ffrec pw mmv\
-	news bm howto \
+SCRIPTS = sb tp brt clip shot ffrec pw mmv news bm
 
 .PHONY: install
 install: $(SCRIPTS)
