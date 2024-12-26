@@ -2,7 +2,7 @@
 # Control the display brightness.
 
 # backlight device name
-dev='/sys/class/backlight/amdgpu_bl1'
+dev='/sys/class/backlight/intel_backlight'
 
 setenv() {
 	[ -r "$dev/brightness" ] && [ -r "$dev/max_brightness" ] || {
