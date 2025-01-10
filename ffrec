@@ -10,7 +10,6 @@ ffstart() {
 	ffmpeg \
 		-loglevel panic \
 		-f x11grab \
-		-s 1920x1080 \
 		-i "$DISPLAY" \
 		-f pulse \
 		-i default \
